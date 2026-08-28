@@ -7,7 +7,7 @@ pelegram provides a simple interface for building Telegram bots with PHP, includ
 ## Requirements
 
 * PHP 8.1+
-* Guzzle HTTP 7.x
+* Guzzle HTTP 8.x
 
 ## Installation
 
@@ -44,6 +44,8 @@ $update = new Update(
 
 $router->dispatch($bot, $update);
 ```
+
+Just need set webhook on your main file!
 
 That's it.
 
