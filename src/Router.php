@@ -2,6 +2,7 @@
 
 namespace miraliog\pelegram;
 
+use Closure;
 use miraliog\pelegram\Contracts\MiddlewareInterface;
 use miraliog\pelegram\Exceptions\pelegramException;
 
@@ -15,29 +16,29 @@ class Router
     private array $regexHandlers     = [];
 
     // update-type handlers
-    private ?callable $onMessageHandler              = null;
-    private ?callable $onEditedMessageHandler        = null;
-    private ?callable $onChannelPostHandler          = null;
-    private ?callable $onCallbackQueryHandler        = null;
-    private ?callable $onInlineQueryHandler          = null;
-    private ?callable $onPreCheckoutQueryHandler     = null;
-    private ?callable $onSuccessfulPaymentHandler    = null;
-    private ?callable $onShippingQueryHandler        = null;
-    private ?callable $onPollHandler                 = null;
-    private ?callable $onPollAnswerHandler           = null;
-    private ?callable $onMyChatMemberHandler         = null;
-    private ?callable $onChatMemberHandler           = null;
-    private ?callable $onChatJoinRequestHandler      = null;
-    private ?callable $onChatBoostHandler            = null;
-    private ?callable $onMessageReactionHandler      = null;
-    private ?callable $onBusinessMessageHandler      = null;
-    private ?callable $onContactHandler              = null;
-    private ?callable $onLocationHandler             = null;
-    private ?callable $onPhotoHandler                = null;
-    private ?callable $onVideoHandler                = null;
-    private ?callable $onDocumentHandler             = null;
-    private ?callable $onVoiceHandler                = null;
-    private ?callable $onStickerHandler              = null;
+    private ?Closure $onMessageHandler              = null;
+    private ?Closure $onEditedMessageHandler        = null;
+    private ?Closure $onChannelPostHandler          = null;
+    private ?Closure $onCallbackQueryHandler        = null;
+    private ?Closure $onInlineQueryHandler          = null;
+    private ?Closure $onPreCheckoutQueryHandler     = null;
+    private ?Closure $onSuccessfulPaymentHandler    = null;
+    private ?Closure $onShippingQueryHandler        = null;
+    private ?Closure $onPollHandler                 = null;
+    private ?Closure $onPollAnswerHandler           = null;
+    private ?Closure $onMyChatMemberHandler         = null;
+    private ?Closure $onChatMemberHandler           = null;
+    private ?Closure $onChatJoinRequestHandler      = null;
+    private ?Closure $onChatBoostHandler            = null;
+    private ?Closure $onMessageReactionHandler      = null;
+    private ?Closure $onBusinessMessageHandler      = null;
+    private ?Closure $onContactHandler              = null;
+    private ?Closure $onLocationHandler             = null;
+    private ?Closure $onPhotoHandler                = null;
+    private ?Closure $onVideoHandler                = null;
+    private ?Closure $onDocumentHandler             = null;
+    private ?Closure $onVoiceHandler                = null;
+    private ?Closure $onStickerHandler              = null;
 
     /** @var MiddlewareInterface[] */
     private array $middlewares = [];
