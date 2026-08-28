@@ -5,10 +5,6 @@ namespace miraliog\pelegram;
 use miraliog\pelegram\Contracts\MiddlewareInterface;
 use miraliog\pelegram\Exceptions\pelegramException;
 
-/**
- * Router — ثبت handler ها و dispatch اپدیت
- * الهام گرفته از aiogram
- */
 class Router
 {
     // handler storage
@@ -46,7 +42,6 @@ class Router
     /** @var MiddlewareInterface[] */
     private array $middlewares = [];
 
-    /** متن‌هایی که middleware رو دور می‌زنن (مثل دکمه‌های برگشت) */
     private array $bypassTexts = [];
 
     // ==================== Middleware ====================
@@ -57,9 +52,6 @@ class Router
         return $this;
     }
 
-    /**
-     * متن‌هایی که همیشه اولویت دارن و middleware رو رد می‌کنن
-     */
     public function bypass(string ...$texts): static
     {
         foreach ($texts as $text) {
@@ -76,7 +68,6 @@ class Router
         return $this;
     }
 
-    /** چند کامند رو به یه handler وصل می‌کنه */
     public function onCommands(array $commands, callable $handler): static
     {
         foreach ($commands as $command) {
@@ -93,7 +84,6 @@ class Router
         return $this;
     }
 
-    /** چند متن رو به یه handler وصل می‌کنه */
     public function onTexts(array $texts, callable $handler): static
     {
         foreach ($texts as $text) {
@@ -102,7 +92,6 @@ class Router
         return $this;
     }
 
-    /** regex روی متن پیام */
     public function onPattern(string $pattern, callable $handler): static
     {
         $this->regexHandlers[] = ['pattern' => $pattern, 'handler' => $handler];
@@ -125,7 +114,6 @@ class Router
 
     // ==================== Update-type handlers ====================
 
-    /** هر پیام که به handler خاصی نرسید */
     public function onMessage(callable $handler): static
     {
         $this->onMessageHandler = $handler;
@@ -144,7 +132,6 @@ class Router
         return $this;
     }
 
-    /** هر callback که به handler خاصی نرسید */
     public function onCallbackQuery(callable $handler): static
     {
         $this->onCallbackQueryHandler = $handler;
@@ -274,7 +261,6 @@ class Router
         try {
             $this->handle($bot, $update);
         } catch (pelegramException $e) {
-            // pelegramException ها رو re-throw نمیکنیم — لاگ کن و ادامه بده
             error_log("[pelegramException] {$e->getMessage()} (code: {$e->getErrorCode()})");
         } catch (\Throwable $e) {
             error_log("[Router] Unhandled exception: {$e->getMessage()} in {$e->getFile()}:{$e->getLine()}");
@@ -284,7 +270,6 @@ class Router
                 try {
                     $bot->sendMessage($userId, '⚠️ خطای غیرمنتظره‌ای رخ داد. لطفاً دوباره امتحان کن.');
                 } catch (\Throwable) {
-                    // اگه sendMessage هم fail کرد، فقط ignore می‌کنیم
                 }
             }
         }
@@ -377,7 +362,6 @@ class Router
             return;
         }
 
-        // bypass texts — همیشه اول، بدون middleware
         $text = $update->text();
         if ($text !== null && in_array($text, $this->bypassTexts, true)) {
             if (isset($this->textHandlers[$text])) {
@@ -386,12 +370,10 @@ class Router
             return;
         }
 
-        // middleware chain
         if (!$this->runMiddlewares($bot, $update)) {
             return;
         }
 
-        // command
         if ($update->isCommand()) {
             [$command, $payload] = $update->commandParts();
             if (isset($this->commandHandlers[$command])) {
@@ -400,7 +382,6 @@ class Router
             return;
         }
 
-        // media types
         if ($update->isContact() && $this->onContactHandler !== null) {
             ($this->onContactHandler)($bot, $update);
             return;
@@ -436,13 +417,11 @@ class Router
             return;
         }
 
-        // exact text match
         if ($text !== null && isset($this->textHandlers[$text])) {
             ($this->textHandlers[$text])($bot, $update);
             return;
         }
 
-        // regex pattern match
         if ($text !== null) {
             foreach ($this->regexHandlers as ['pattern' => $pattern, 'handler' => $handler]) {
                 if (preg_match($pattern, $text, $matches)) {
@@ -452,7 +431,6 @@ class Router
             }
         }
 
-        // fallback
         $this->call($this->onMessageHandler, $bot, $update);
     }
 
@@ -468,13 +446,11 @@ class Router
             return;
         }
 
-        // exact match
         if (isset($this->callbackExact[$data])) {
             ($this->callbackExact[$data])($bot, $update);
             return;
         }
 
-        // prefix match
         foreach ($this->callbackPrefix as $prefix => $handler) {
             if (str_starts_with($data, $prefix)) {
                 $param = substr($data, strlen($prefix));
@@ -483,20 +459,14 @@ class Router
             }
         }
 
-        // fallback
         if ($this->onCallbackQueryHandler !== null) {
             ($this->onCallbackQueryHandler)($bot, $update);
             return;
         }
 
-        // اگه handler نداشت، query رو جواب بده که loading بره
         $bot->answerCallbackQuery($update->callbackQueryId() ?? '');
     }
 
-    /**
-     * middleware chain رو اجرا می‌کنه
-     * اگه false برگردونه، dispatch متوقف میشه
-     */
     private function runMiddlewares(Bot $bot, Update $update): bool
     {
         if (empty($this->middlewares)) {
