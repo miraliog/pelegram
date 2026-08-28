@@ -370,8 +370,8 @@ class Router
             [$command, $payload] = $update->commandParts();
             if (isset($this->commandHandlers[$command])) {
                 ($this->commandHandlers[$command])($bot, $update, $payload);
+                return;
             }
-            return;
         }
 
         if ($update->isContact() && $this->onContactHandler !== null) {
