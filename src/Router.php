@@ -264,14 +264,6 @@ class Router
             error_log("[pelegramException] {$e->getMessage()} (code: {$e->getErrorCode()})");
         } catch (\Throwable $e) {
             error_log("[Router] Unhandled exception: {$e->getMessage()} in {$e->getFile()}:{$e->getLine()}");
-
-            $userId = $update->userId();
-            if ($userId !== null) {
-                try {
-                    $bot->sendMessage($userId, '⚠️ خطای غیرمنتظره‌ای رخ داد. لطفاً دوباره امتحان کن.');
-                } catch (\Throwable) {
-                }
-            }
         }
     }
 
