@@ -8,14 +8,12 @@ use miraliog\pelegram\Exceptions\pelegramException;
 
 class Router
 {
-    // handler storage
-    private array $commandHandlers   = [];
-    private array $textHandlers      = [];
-    private array $callbackExact     = [];
-    private array $callbackPrefix    = [];
-    private array $regexHandlers     = [];
+    private array $commandHandlers          = [];
+    private array $textHandlers             = [];
+    private array $callbackExact            = [];
+    private array $callbackPrefix           = [];
+    private array $regexHandlers            = [];
 
-    // update-type handlers
     private ?Closure $onMessageHandler              = null;
     private ?Closure $onEditedMessageHandler        = null;
     private ?Closure $onChannelPostHandler          = null;
@@ -41,9 +39,8 @@ class Router
     private ?Closure $onStickerHandler              = null;
 
     /** @var MiddlewareInterface[] */
-    private array $middlewares = [];
-
-    private array $bypassTexts = [];
+    private array $middlewares  = [];
+    private array $bypassTexts  = [];
 
     // ==================== Middleware ====================
 
@@ -120,135 +117,111 @@ class Router
         $this->onMessageHandler = $handler;
         return $this;
     }
-
     public function onEditedMessage(callable $handler): static
     {
         $this->onEditedMessageHandler = $handler;
         return $this;
     }
-
     public function onChannelPost(callable $handler): static
     {
         $this->onChannelPostHandler = $handler;
         return $this;
     }
-
     public function onCallbackQuery(callable $handler): static
     {
         $this->onCallbackQueryHandler = $handler;
         return $this;
     }
-
     public function onInlineQuery(callable $handler): static
     {
         $this->onInlineQueryHandler = $handler;
         return $this;
     }
-
     public function onPreCheckoutQuery(callable $handler): static
     {
         $this->onPreCheckoutQueryHandler = $handler;
         return $this;
     }
-
     public function onSuccessfulPayment(callable $handler): static
     {
         $this->onSuccessfulPaymentHandler = $handler;
         return $this;
     }
-
     public function onShippingQuery(callable $handler): static
     {
         $this->onShippingQueryHandler = $handler;
         return $this;
     }
-
     public function onPoll(callable $handler): static
     {
         $this->onPollHandler = $handler;
         return $this;
     }
-
     public function onPollAnswer(callable $handler): static
     {
         $this->onPollAnswerHandler = $handler;
         return $this;
     }
-
     public function onMyChatMember(callable $handler): static
     {
         $this->onMyChatMemberHandler = $handler;
         return $this;
     }
-
     public function onChatMember(callable $handler): static
     {
         $this->onChatMemberHandler = $handler;
         return $this;
     }
-
     public function onChatJoinRequest(callable $handler): static
     {
         $this->onChatJoinRequestHandler = $handler;
         return $this;
     }
-
     public function onChatBoost(callable $handler): static
     {
         $this->onChatBoostHandler = $handler;
         return $this;
     }
-
     public function onMessageReaction(callable $handler): static
     {
         $this->onMessageReactionHandler = $handler;
         return $this;
     }
-
     public function onBusinessMessage(callable $handler): static
     {
         $this->onBusinessMessageHandler = $handler;
         return $this;
     }
-
-    // ==================== Media message type handlers ====================
-
     public function onContact(callable $handler): static
     {
         $this->onContactHandler = $handler;
         return $this;
     }
-
     public function onLocation(callable $handler): static
     {
         $this->onLocationHandler = $handler;
         return $this;
     }
-
     public function onPhoto(callable $handler): static
     {
         $this->onPhotoHandler = $handler;
         return $this;
     }
-
     public function onVideo(callable $handler): static
     {
         $this->onVideoHandler = $handler;
         return $this;
     }
-
     public function onDocument(callable $handler): static
     {
         $this->onDocumentHandler = $handler;
         return $this;
     }
-
     public function onVoice(callable $handler): static
     {
         $this->onVoiceHandler = $handler;
         return $this;
     }
-
     public function onSticker(callable $handler): static
     {
         $this->onStickerHandler = $handler;
@@ -259,6 +232,9 @@ class Router
 
     public function dispatch(Bot $bot, Update $update): void
     {
+        // bot رو روی update set می‌کنیم تا answer() و reply() کار کنن
+        $update->setBot($bot);
+
         try {
             $this->handle($bot, $update);
         } catch (pelegramException $e) {
@@ -270,50 +246,44 @@ class Router
 
     private function handle(Bot $bot, Update $update): void
     {
-        // ==================== Non-message update types ====================
-
         if ($update->isPreCheckoutQuery()) {
             $this->call($this->onPreCheckoutQueryHandler, $bot, $update);
             return;
         }
-
         if ($update->isSuccessfulPayment()) {
             $this->call($this->onSuccessfulPaymentHandler, $bot, $update);
             return;
         }
-
         if ($update->isShippingQuery()) {
             $this->call($this->onShippingQueryHandler, $bot, $update);
             return;
         }
-
         if ($update->isInlineQuery()) {
             $this->call($this->onInlineQueryHandler, $bot, $update);
             return;
         }
-
         if ($update->isPoll()) {
             $this->call($this->onPollHandler, $bot, $update);
             return;
         }
-
         if ($update->isPollAnswer()) {
             $this->call($this->onPollAnswerHandler, $bot, $update);
             return;
         }
-
         if ($update->isMyChatMember()) {
             $this->call($this->onMyChatMemberHandler, $bot, $update);
             return;
         }
-
         if ($update->isChatMember()) {
             $this->call($this->onChatMemberHandler, $bot, $update);
             return;
         }
-
         if ($update->isChatJoinRequest()) {
             $this->call($this->onChatJoinRequestHandler, $bot, $update);
+            return;
+        }
+        if ($update->isEditedMessage()) {
+            $this->call($this->onEditedMessageHandler, $bot, $update);
             return;
         }
 
@@ -327,11 +297,6 @@ class Router
             return;
         }
 
-        if ($update->isEditedMessage()) {
-            $this->call($this->onEditedMessageHandler, $bot, $update);
-            return;
-        }
-
         if ($update->isChannelPost() || $update->isEditedChannelPost()) {
             $this->call($this->onChannelPostHandler, $bot, $update);
             return;
@@ -342,20 +307,18 @@ class Router
             return;
         }
 
-        // ==================== Callback Query ====================
-
         if ($update->isCallbackQuery()) {
             $this->dispatchCallback($bot, $update);
             return;
         }
-
-        // ==================== Message ====================
 
         if (!$update->isMessage()) {
             return;
         }
 
         $text = $update->text();
+
+        // bypass — بدون middleware
         if ($text !== null && in_array($text, $this->bypassTexts, true)) {
             if (isset($this->textHandlers[$text])) {
                 ($this->textHandlers[$text])($bot, $update);
@@ -375,37 +338,31 @@ class Router
             }
         }
 
-        if ($update->isContact() && $this->onContactHandler !== null) {
+        if ($update->isContact()  && $this->onContactHandler  !== null) {
             ($this->onContactHandler)($bot, $update);
             return;
         }
-
         if ($update->isLocation() && $this->onLocationHandler !== null) {
             ($this->onLocationHandler)($bot, $update);
             return;
         }
-
-        if ($update->isPhoto() && $this->onPhotoHandler !== null) {
+        if ($update->isPhoto()    && $this->onPhotoHandler    !== null) {
             ($this->onPhotoHandler)($bot, $update);
             return;
         }
-
-        if ($update->isVideo() && $this->onVideoHandler !== null) {
+        if ($update->isVideo()    && $this->onVideoHandler    !== null) {
             ($this->onVideoHandler)($bot, $update);
             return;
         }
-
         if ($update->isDocument() && $this->onDocumentHandler !== null) {
             ($this->onDocumentHandler)($bot, $update);
             return;
         }
-
-        if ($update->isVoice() && $this->onVoiceHandler !== null) {
+        if ($update->isVoice()    && $this->onVoiceHandler    !== null) {
             ($this->onVoiceHandler)($bot, $update);
             return;
         }
-
-        if ($update->isSticker() && $this->onStickerHandler !== null) {
+        if ($update->isSticker()  && $this->onStickerHandler  !== null) {
             ($this->onStickerHandler)($bot, $update);
             return;
         }
@@ -446,8 +403,7 @@ class Router
 
         foreach ($this->callbackPrefix as $prefix => $handler) {
             if (str_starts_with($data, $prefix)) {
-                $param = substr($data, strlen($prefix));
-                $handler($bot, $update, $param);
+                $handler($bot, $update, substr($data, strlen($prefix)));
                 return;
             }
         }
@@ -466,15 +422,12 @@ class Router
             return true;
         }
 
-        $index   = 0;
+        $index = 0;
         $middlewares = $this->middlewares;
 
         $next = function () use ($bot, $update, &$index, $middlewares, &$next): bool {
-            if ($index >= count($middlewares)) {
-                return true;
-            }
-            $middleware = $middlewares[$index++];
-            return $middleware->handle($bot, $update, $next);
+            if ($index >= count($middlewares)) return true;
+            return $middlewares[$index++]->handle($bot, $update, $next);
         };
 
         return $next();
