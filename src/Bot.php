@@ -23,10 +23,6 @@ class Bot
 
     // ==================== Core ====================
 
-    /**
-     * اجرای مستقیم هر متد تلگرام
-     * @throws pelegramException
-     */
     public function call(string $method, array $params = []): array
     {
         try {

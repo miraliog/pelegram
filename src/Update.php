@@ -31,6 +31,13 @@ class Update
 
     public function __construct(public readonly array $raw) {}
 
+    public static function fromWebhook(): ?static
+    {
+        $data = json_decode(file_get_contents('php://input'), true);
+        if (!is_array($data)) return null;
+        return new static($data);
+    }
+
     public function setBot(Bot $bot): void
     {
         $this->bot = $bot;

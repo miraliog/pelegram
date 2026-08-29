@@ -230,9 +230,14 @@ class Router
 
     // ==================== Dispatch ====================
 
-    public function dispatch(Bot $bot, Update $update): void
+    public function dispatch(Bot $bot, ?Update $update = null): void
     {
-        // bot رو روی update set می‌کنیم تا answer() و reply() کار کنن
+        $update ??= Update::fromWebhook();
+        if ($update === null) {
+            http_response_code(200);
+            exit;
+        }
+
         $update->setBot($bot);
 
         try {
@@ -318,7 +323,6 @@ class Router
 
         $text = $update->text();
 
-        // bypass — بدون middleware
         if ($text !== null && in_array($text, $this->bypassTexts, true)) {
             if (isset($this->textHandlers[$text])) {
                 ($this->textHandlers[$text])($bot, $update);
