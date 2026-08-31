@@ -5,7 +5,7 @@ namespace Miraliog\Pelegram;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
 use Miraliog\Pelegram\Exceptions\pelegramException;
-use Miraliog\Pelegram\Types\Contracts\Keyboardable;
+use Miraliog\Pelegram\Types\Keyboard\Contracts\Keyboardable;
 
 class Bot
 {

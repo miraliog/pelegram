@@ -3,7 +3,7 @@
 namespace Miraliog\Pelegram\Types;
 
 use Miraliog\Pelegram\Bot;
-use Miraliog\Pelegram\Types\Contracts\Keyboardable;
+use Miraliog\Pelegram\Types\Keyboard\Contracts\Keyboardable;
 
 class CallbackQuery
 {
