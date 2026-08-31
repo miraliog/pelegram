@@ -222,8 +222,15 @@ class Router
         return $this;
     }
 
-    public function dispatch(Bot $bot, Update $update): void
+    public function dispatch(Bot $bot, ?Update $update): void
     {
+        $update ??= Update::fromWebhook();
+
+        if ($update === null) {
+            http_response_code(200);
+            exit;
+        }
+
         $update->setBot($bot);
 
         try {
