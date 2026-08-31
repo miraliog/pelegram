@@ -1,15 +1,12 @@
 <?php
 
-namespace miraliog\pelegram;
+namespace Miraliog\Pelegram;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\GuzzleException;
-use miraliog\pelegram\Exceptions\pelegramException;
+use Miraliog\Pelegram\Exceptions\pelegramException;
+use Miraliog\Pelegram\Types\Contracts\Keyboardable;
 
-/**
- * pelegram Bot API wrapper
- * Supports Bot API 10.3
- */
 class Bot
 {
     private Client $http;
@@ -88,7 +85,7 @@ class Bot
     public function sendMessage(
         int|string $chatId,
         string $text,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
         string $parseMode = 'HTML',
         bool $disableWebPagePreview = false,
         ?int $replyToMessageId = null,
@@ -99,7 +96,9 @@ class Bot
             'chat_id'                  => $chatId,
             'text'                     => $text,
             'parse_mode'               => $parseMode,
-            'reply_markup'             => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup'             => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
             'disable_web_page_preview' => $disableWebPagePreview ?: null,
             'reply_to_message_id'      => $replyToMessageId,
             'protect_content'          => $protectContent ?: null,
@@ -111,7 +110,7 @@ class Bot
         int|string $chatId,
         string|\CURLFile $photo,
         ?string $caption = null,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
         string $parseMode = 'HTML',
         ?int $replyToMessageId = null,
         ?int $messageThreadId = null,
@@ -121,7 +120,9 @@ class Bot
             'photo'               => $photo,
             'caption'             => $caption,
             'parse_mode'          => $parseMode,
-            'reply_markup'        => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup'        => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
             'reply_to_message_id' => $replyToMessageId,
             'message_thread_id'   => $messageThreadId,
         ]);
@@ -134,7 +135,7 @@ class Bot
         ?int $duration = null,
         ?int $width = null,
         ?int $height = null,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
         string $parseMode = 'HTML',
         ?int $replyToMessageId = null,
     ): array {
@@ -146,7 +147,9 @@ class Bot
             'width'               => $width,
             'height'              => $height,
             'parse_mode'          => $parseMode,
-            'reply_markup'        => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup'        => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
             'reply_to_message_id' => $replyToMessageId,
         ]);
     }
@@ -158,7 +161,7 @@ class Bot
         ?string $title = null,
         ?string $performer = null,
         ?int $duration = null,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
         string $parseMode = 'HTML',
     ): array {
         return $this->call('sendAudio', [
@@ -169,7 +172,9 @@ class Bot
             'performer'    => $performer,
             'duration'     => $duration,
             'parse_mode'   => $parseMode,
-            'reply_markup' => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup' => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
         ]);
     }
 
@@ -177,7 +182,7 @@ class Bot
         int|string $chatId,
         string|\CURLFile $document,
         ?string $caption = null,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
         string $parseMode = 'HTML',
         ?int $replyToMessageId = null,
     ): array {
@@ -186,7 +191,9 @@ class Bot
             'document'            => $document,
             'caption'             => $caption,
             'parse_mode'          => $parseMode,
-            'reply_markup'        => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup'        => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
             'reply_to_message_id' => $replyToMessageId,
         ]);
     }
@@ -196,14 +203,16 @@ class Bot
         string|\CURLFile $voice,
         ?string $caption = null,
         ?int $duration = null,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
     ): array {
         return $this->call('sendVoice', [
             'chat_id'      => $chatId,
             'voice'        => $voice,
             'caption'      => $caption,
             'duration'     => $duration,
-            'reply_markup' => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup' => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
         ]);
     }
 
@@ -212,27 +221,31 @@ class Bot
         string|\CURLFile $videoNote,
         ?int $duration = null,
         ?int $length = null,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
     ): array {
         return $this->call('sendVideoNote', [
             'chat_id'    => $chatId,
             'video_note' => $videoNote,
             'duration'   => $duration,
             'length'     => $length,
-            'reply_markup' => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup' => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
         ]);
     }
 
     public function sendSticker(
         int|string $chatId,
         string|\CURLFile $sticker,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
         ?int $replyToMessageId = null,
     ): array {
         return $this->call('sendSticker', [
             'chat_id'             => $chatId,
             'sticker'             => $sticker,
-            'reply_markup'        => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup'        => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
             'reply_to_message_id' => $replyToMessageId,
         ]);
     }
@@ -242,7 +255,7 @@ class Bot
         string|\CURLFile $animation,
         ?string $caption = null,
         ?int $duration = null,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
         string $parseMode = 'HTML',
     ): array {
         return $this->call('sendAnimation', [
@@ -251,7 +264,9 @@ class Bot
             'caption'      => $caption,
             'duration'     => $duration,
             'parse_mode'   => $parseMode,
-            'reply_markup' => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup' => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
         ]);
     }
 
@@ -260,14 +275,16 @@ class Bot
         float $latitude,
         float $longitude,
         ?int $livePeriod = null,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
     ): array {
         return $this->call('sendLocation', [
             'chat_id'      => $chatId,
             'latitude'     => $latitude,
             'longitude'    => $longitude,
             'live_period'  => $livePeriod,
-            'reply_markup' => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup' => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
         ]);
     }
 
@@ -276,14 +293,16 @@ class Bot
         string $phoneNumber,
         string $firstName,
         ?string $lastName = null,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
     ): array {
         return $this->call('sendContact', [
             'chat_id'      => $chatId,
             'phone_number' => $phoneNumber,
             'first_name'   => $firstName,
             'last_name'    => $lastName,
-            'reply_markup' => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup' => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
         ]);
     }
 
@@ -309,7 +328,7 @@ class Bot
         ?int $correctOptionId = null,
         ?string $explanation = null,
         ?int $openPeriod = null,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
     ): array {
         return $this->call('sendPoll', [
             'chat_id'                 => $chatId,
@@ -321,7 +340,9 @@ class Bot
             'correct_option_id'       => $correctOptionId,
             'explanation'             => $explanation,
             'open_period'             => $openPeriod,
-            'reply_markup'            => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup'            => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
         ]);
     }
 
@@ -350,7 +371,7 @@ class Bot
         string $currency,
         array $prices,
         string $providerToken = '',
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
         ?int $replyToMessageId = null,
     ): array {
         return $this->call('sendInvoice', [
@@ -361,7 +382,9 @@ class Bot
             'provider_token'      => $providerToken,
             'currency'            => $currency,
             'prices'              => json_encode($prices),
-            'reply_markup'        => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup'        => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
             'reply_to_message_id' => $replyToMessageId,
         ]);
     }
@@ -372,7 +395,7 @@ class Bot
         int|string $chatId,
         int $messageId,
         string $text,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
         string $parseMode = 'HTML',
         bool $disableWebPagePreview = false,
     ): array {
@@ -381,7 +404,9 @@ class Bot
             'message_id'               => $messageId,
             'text'                     => $text,
             'parse_mode'               => $parseMode,
-            'reply_markup'             => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup'             => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
             'disable_web_page_preview' => $disableWebPagePreview ?: null,
         ]);
     }
@@ -390,7 +415,7 @@ class Bot
         int|string $chatId,
         int $messageId,
         string $caption,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
         string $parseMode = 'HTML',
     ): array {
         return $this->call('editMessageCaption', [
@@ -398,19 +423,23 @@ class Bot
             'message_id'   => $messageId,
             'caption'      => $caption,
             'parse_mode'   => $parseMode,
-            'reply_markup' => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup' => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
         ]);
     }
 
     public function editMessageReplyMarkup(
         int|string $chatId,
         int $messageId,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
     ): array {
         return $this->call('editMessageReplyMarkup', [
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
-            'reply_markup' => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup' => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
         ]);
     }
 
@@ -418,13 +447,15 @@ class Bot
         int|string $chatId,
         int $messageId,
         array $media,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
     ): array {
         return $this->call('editMessageMedia', [
             'chat_id'      => $chatId,
             'message_id'   => $messageId,
             'media'        => json_encode($media),
-            'reply_markup' => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup' => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
         ]);
     }
 
@@ -463,7 +494,7 @@ class Bot
         int|string $fromChatId,
         int $messageId,
         ?string $caption = null,
-        array|null $replyMarkup = null,
+        Keyboardable|array|null $replyMarkup = null,
         string $parseMode = 'HTML',
     ): array {
         return $this->call('copyMessage', [
@@ -472,7 +503,9 @@ class Bot
             'message_id'   => $messageId,
             'caption'      => $caption,
             'parse_mode'   => $parseMode,
-            'reply_markup' => $replyMarkup ? json_encode($replyMarkup) : null,
+            'reply_markup' => $replyMarkup instanceof Keyboardable
+                ? json_encode($replyMarkup->toArray())
+                : ($replyMarkup ? json_encode($replyMarkup) : null),
         ]);
     }
 

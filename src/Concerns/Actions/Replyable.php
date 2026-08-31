@@ -1,8 +1,8 @@
 <?php
 
-namespace miraliog\pelegram\Concerns\Actions;
+namespace Miraliog\Pelegram\Concerns\Actions;
 
-use miraliog\pelegram\Exceptions\pelegramException;
+use Miraliog\Pelegram\Exceptions\pelegramException;
 
 trait Replyable
 {
@@ -23,5 +23,4 @@ trait Replyable
             replyToMessageId: $this->messageId(),
         );
     }
-
 }

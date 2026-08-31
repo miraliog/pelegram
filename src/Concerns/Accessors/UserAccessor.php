@@ -1,6 +1,6 @@
 <?php
 
-namespace miraliog\pelegram\Concerns\Accessors;
+namespace Miraliog\Pelegram\Concerns\Accessors;
 
 trait UserAccessor
 {

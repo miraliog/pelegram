@@ -1,6 +1,6 @@
 <?php
 
-namespace miraliog\pelegram\Concerns\Update;
+namespace Miraliog\Pelegram\Concerns\Update;
 
 trait DetectsMessageType
 {

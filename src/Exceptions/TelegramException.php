@@ -1,6 +1,6 @@
 <?php
 
-namespace miraliog\pelegram\Exceptions;
+namespace Miraliog\Pelegram\Exceptions;
 
 class pelegramException extends \RuntimeException
 {

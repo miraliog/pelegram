@@ -1,10 +1,14 @@
 <?php
 
-namespace miraliog\pelegram;
+namespace Miraliog\Pelegram;
 
 use Closure;
-use miraliog\pelegram\Contracts\MiddlewareInterface;
-use miraliog\pelegram\Exceptions\pelegramException;
+use ReflectionFunction;
+use Miraliog\Pelegram\Types\Message;
+use Miraliog\Pelegram\Types\CallbackQuery;
+use Miraliog\Pelegram\Types\InlineQuery;
+use Miraliog\Pelegram\Contracts\MiddlewareInterface;
+use Miraliog\Pelegram\Exceptions\pelegramException;
 
 class Router
 {
@@ -42,8 +46,6 @@ class Router
     private array $middlewares  = [];
     private array $bypassTexts  = [];
 
-    // ==================== Middleware ====================
-
     public function use(MiddlewareInterface $middleware): static
     {
         $this->middlewares[] = $middleware;
@@ -58,8 +60,6 @@ class Router
         return $this;
     }
 
-    // ==================== Command handlers ====================
-
     public function onCommand(string $command, callable $handler): static
     {
         $this->commandHandlers[ltrim($command, '/')] = $handler;
@@ -73,8 +73,6 @@ class Router
         }
         return $this;
     }
-
-    // ==================== Text handlers ====================
 
     public function onText(string $text, callable $handler): static
     {
@@ -96,8 +94,6 @@ class Router
         return $this;
     }
 
-    // ==================== Callback handlers ====================
-
     public function onCallback(string $data, callable $handler): static
     {
         $this->callbackExact[$data] = $handler;
@@ -109,8 +105,6 @@ class Router
         $this->callbackPrefix[$prefix] = $handler;
         return $this;
     }
-
-    // ==================== Update-type handlers ====================
 
     public function onMessage(callable $handler): static
     {
@@ -228,16 +222,8 @@ class Router
         return $this;
     }
 
-    // ==================== Dispatch ====================
-
-    public function dispatch(Bot $bot, ?Update $update = null): void
+    public function dispatch(Bot $bot, Update $update): void
     {
-        $update ??= Update::fromWebhook();
-        if ($update === null) {
-            http_response_code(200);
-            exit;
-        }
-
         $update->setBot($bot);
 
         try {
@@ -252,63 +238,62 @@ class Router
     private function handle(Bot $bot, Update $update): void
     {
         if ($update->isPreCheckoutQuery()) {
-            $this->call($this->onPreCheckoutQueryHandler, $bot, $update);
+            $this->invoke($this->onPreCheckoutQueryHandler, $bot, $update);
             return;
         }
         if ($update->isSuccessfulPayment()) {
-            $this->call($this->onSuccessfulPaymentHandler, $bot, $update);
+            $this->invoke($this->onSuccessfulPaymentHandler, $bot, $update);
             return;
         }
         if ($update->isShippingQuery()) {
-            $this->call($this->onShippingQueryHandler, $bot, $update);
-            return;
-        }
-        if ($update->isInlineQuery()) {
-            $this->call($this->onInlineQueryHandler, $bot, $update);
+            $this->invoke($this->onShippingQueryHandler, $bot, $update);
             return;
         }
         if ($update->isPoll()) {
-            $this->call($this->onPollHandler, $bot, $update);
+            $this->invoke($this->onPollHandler, $bot, $update);
             return;
         }
         if ($update->isPollAnswer()) {
-            $this->call($this->onPollAnswerHandler, $bot, $update);
+            $this->invoke($this->onPollAnswerHandler, $bot, $update);
             return;
         }
         if ($update->isMyChatMember()) {
-            $this->call($this->onMyChatMemberHandler, $bot, $update);
+            $this->invoke($this->onMyChatMemberHandler, $bot, $update);
             return;
         }
         if ($update->isChatMember()) {
-            $this->call($this->onChatMemberHandler, $bot, $update);
+            $this->invoke($this->onChatMemberHandler, $bot, $update);
             return;
         }
         if ($update->isChatJoinRequest()) {
-            $this->call($this->onChatJoinRequestHandler, $bot, $update);
+            $this->invoke($this->onChatJoinRequestHandler, $bot, $update);
             return;
         }
         if ($update->isEditedMessage()) {
-            $this->call($this->onEditedMessageHandler, $bot, $update);
+            $this->invoke($this->onEditedMessageHandler, $bot, $update);
             return;
         }
 
         if ($update->isChatBoost() || $update->isRemovedChatBoost()) {
-            $this->call($this->onChatBoostHandler, $bot, $update);
+            $this->invoke($this->onChatBoostHandler, $bot, $update);
             return;
         }
-
         if ($update->isMessageReaction() || $update->isMessageReactionCount()) {
-            $this->call($this->onMessageReactionHandler, $bot, $update);
+            $this->invoke($this->onMessageReactionHandler, $bot, $update);
             return;
         }
-
         if ($update->isChannelPost() || $update->isEditedChannelPost()) {
-            $this->call($this->onChannelPostHandler, $bot, $update);
+            $this->invoke($this->onChannelPostHandler, $bot, $update);
+            return;
+        }
+        if ($update->isBusinessMessage() || $update->isEditedBusinessMessage()) {
+            $this->invoke($this->onBusinessMessageHandler, $bot, $update);
             return;
         }
 
-        if ($update->isBusinessMessage() || $update->isEditedBusinessMessage()) {
-            $this->call($this->onBusinessMessageHandler, $bot, $update);
+        if ($update->isInlineQuery()) {
+            $inlineQuery = new InlineQuery($update->raw['inline_query'], $bot);
+            $this->invoke($this->onInlineQueryHandler, $bot, $update, $inlineQuery);
             return;
         }
 
@@ -317,130 +302,152 @@ class Router
             return;
         }
 
-        if (!$update->isMessage()) {
-            return;
-        }
+        if (!$update->isMessage()) return;
 
-        $text = $update->text();
+        $message = new Message($update->raw['message'], $bot);
+        $text    = $message->text();
 
+        // bypass
         if ($text !== null && in_array($text, $this->bypassTexts, true)) {
             if (isset($this->textHandlers[$text])) {
-                ($this->textHandlers[$text])($bot, $update);
+                $this->invoke($this->textHandlers[$text], $bot, $update, $message);
             }
             return;
         }
 
-        if (!$this->runMiddlewares($bot, $update)) {
-            return;
-        }
+        if (!$this->runMiddlewares($bot, $update)) return;
 
-        if ($update->isCommand()) {
-            [$command, $payload] = $update->commandParts();
+        // command
+        if ($message->isCommand()) {
+            [$command, $payload] = $message->commandParts();
             if (isset($this->commandHandlers[$command])) {
-                ($this->commandHandlers[$command])($bot, $update, $payload);
+                $this->invoke($this->commandHandlers[$command], $bot, $update, $message, $payload);
                 return;
             }
         }
 
-        if ($update->isContact()  && $this->onContactHandler  !== null) {
-            ($this->onContactHandler)($bot, $update);
+        if ($message->isContact()  && $this->onContactHandler  !== null) {
+            $this->invoke($this->onContactHandler,  $bot, $update, $message);
             return;
         }
-        if ($update->isLocation() && $this->onLocationHandler !== null) {
-            ($this->onLocationHandler)($bot, $update);
+        if ($message->isLocation() && $this->onLocationHandler !== null) {
+            $this->invoke($this->onLocationHandler, $bot, $update, $message);
             return;
         }
-        if ($update->isPhoto()    && $this->onPhotoHandler    !== null) {
-            ($this->onPhotoHandler)($bot, $update);
+        if ($message->isPhoto()    && $this->onPhotoHandler    !== null) {
+            $this->invoke($this->onPhotoHandler,    $bot, $update, $message);
             return;
         }
-        if ($update->isVideo()    && $this->onVideoHandler    !== null) {
-            ($this->onVideoHandler)($bot, $update);
+        if ($message->isVideo()    && $this->onVideoHandler    !== null) {
+            $this->invoke($this->onVideoHandler,    $bot, $update, $message);
             return;
         }
-        if ($update->isDocument() && $this->onDocumentHandler !== null) {
-            ($this->onDocumentHandler)($bot, $update);
+        if ($message->isDocument() && $this->onDocumentHandler !== null) {
+            $this->invoke($this->onDocumentHandler, $bot, $update, $message);
             return;
         }
-        if ($update->isVoice()    && $this->onVoiceHandler    !== null) {
-            ($this->onVoiceHandler)($bot, $update);
+        if ($message->isVoice()    && $this->onVoiceHandler    !== null) {
+            $this->invoke($this->onVoiceHandler,    $bot, $update, $message);
             return;
         }
-        if ($update->isSticker()  && $this->onStickerHandler  !== null) {
-            ($this->onStickerHandler)($bot, $update);
+        if ($message->isSticker()  && $this->onStickerHandler  !== null) {
+            $this->invoke($this->onStickerHandler,  $bot, $update, $message);
             return;
         }
 
         if ($text !== null && isset($this->textHandlers[$text])) {
-            ($this->textHandlers[$text])($bot, $update);
+            $this->invoke($this->textHandlers[$text], $bot, $update, $message);
             return;
         }
 
         if ($text !== null) {
             foreach ($this->regexHandlers as ['pattern' => $pattern, 'handler' => $handler]) {
                 if (preg_match($pattern, $text, $matches)) {
-                    $handler($bot, $update, $matches);
+                    $this->invoke($handler, $bot, $update, $message, $matches);
                     return;
                 }
             }
         }
 
-        $this->call($this->onMessageHandler, $bot, $update);
+        $this->invoke($this->onMessageHandler, $bot, $update, $message);
     }
 
     private function dispatchCallback(Bot $bot, Update $update): void
     {
-        if (!$this->runMiddlewares($bot, $update)) {
-            return;
-        }
+        if (!$this->runMiddlewares($bot, $update)) return;
 
-        $data = $update->callbackData();
+        $callback = new CallbackQuery($update->raw['callback_query'], $bot);
+        $data     = $callback->data();
+
         if ($data === null) {
-            $bot->answerCallbackQuery($update->callbackQueryId() ?? '');
+            $callback->answer();
             return;
         }
 
         if (isset($this->callbackExact[$data])) {
-            ($this->callbackExact[$data])($bot, $update);
+            $this->invoke($this->callbackExact[$data], $bot, $update, $callback);
             return;
         }
 
         foreach ($this->callbackPrefix as $prefix => $handler) {
             if (str_starts_with($data, $prefix)) {
-                $handler($bot, $update, substr($data, strlen($prefix)));
+                $this->invoke($handler, $bot, $update, $callback, substr($data, strlen($prefix)));
                 return;
             }
         }
 
         if ($this->onCallbackQueryHandler !== null) {
-            ($this->onCallbackQueryHandler)($bot, $update);
+            $this->invoke($this->onCallbackQueryHandler, $bot, $update, $callback);
             return;
         }
 
-        $bot->answerCallbackQuery($update->callbackQueryId() ?? '');
+        $callback->answer();
+    }
+
+    private function invoke(
+        ?callable $handler,
+        Bot $bot,
+        Update $update,
+        Message|CallbackQuery|InlineQuery|null $typed = null,
+        string|array|null $extra = null,
+    ): void {
+        if ($handler === null) return;
+
+        try {
+            $fn   = new ReflectionFunction(\Closure::fromCallable($handler));
+            $args = [];
+
+            foreach ($fn->getParameters() as $param) {
+                $type   = $param->getType()?->getName();
+                $args[] = match ($type) {
+                    Message::class       => $typed instanceof Message       ? $typed : null,
+                    CallbackQuery::class => $typed instanceof CallbackQuery ? $typed : null,
+                    InlineQuery::class   => $typed instanceof InlineQuery   ? $typed : null,
+                    Bot::class           => $bot,
+                    Update::class        => $update,
+                    'string'             => is_string($extra) ? $extra : null,
+                    'array'              => is_array($extra)  ? $extra : null,
+                    default              => null,
+                };
+            }
+
+            $handler(...$args);
+        } catch (\ReflectionException) {
+            $handler($typed ?? $update);
+        }
     }
 
     private function runMiddlewares(Bot $bot, Update $update): bool
     {
-        if (empty($this->middlewares)) {
-            return true;
-        }
+        if (empty($this->middlewares)) return true;
 
-        $index = 0;
+        $index       = 0;
         $middlewares = $this->middlewares;
-
-        $next = function () use ($bot, $update, &$index, $middlewares, &$next): bool {
+        $next        = function () use ($bot, $update, &$index, $middlewares, &$next): bool {
             if ($index >= count($middlewares)) return true;
             return $middlewares[$index++]->handle($bot, $update, $next);
         };
 
         return $next();
-    }
-
-    private function call(?callable $handler, Bot $bot, Update $update): void
-    {
-        if ($handler !== null) {
-            $handler($bot, $update);
-        }
     }
 }

@@ -1,23 +1,23 @@
 <?php
 
-namespace miraliog\pelegram;
+namespace Miraliog\Pelegram;
 
-use miraliog\pelegram\Concerns\Update\DetectsUpdateType;
-use miraliog\pelegram\Concerns\Update\DetectsMessageType;
-use miraliog\pelegram\Concerns\Update\DetectsChatType;
-use miraliog\pelegram\Concerns\Accessors\UserAccessor;
-use miraliog\pelegram\Concerns\Accessors\ChatAccessor;
-use miraliog\pelegram\Concerns\Accessors\MessageAccessor;
-use miraliog\pelegram\Concerns\Accessors\MediaAccessor;
-use miraliog\pelegram\Concerns\Accessors\CommandAccessor;
-use miraliog\pelegram\Concerns\Accessors\CallbackAccessor;
-use miraliog\pelegram\Concerns\Accessors\InlineQueryAccessor;
-use miraliog\pelegram\Concerns\Accessors\PaymentAccessor;
-use miraliog\pelegram\Concerns\Accessors\LocationAccessor;
-use miraliog\pelegram\Concerns\Accessors\ContactAccessor;
-use miraliog\pelegram\Concerns\Accessors\ChatMemberAccessor;
-use miraliog\pelegram\Concerns\Actions\Answerable;
-use miraliog\pelegram\Concerns\Actions\Replyable;
+use Miraliog\Pelegram\Concerns\Update\DetectsUpdateType;
+use Miraliog\Pelegram\Concerns\Update\DetectsMessageType;
+use Miraliog\Pelegram\Concerns\Update\DetectsChatType;
+use Miraliog\Pelegram\Concerns\Accessors\UserAccessor;
+use Miraliog\Pelegram\Concerns\Accessors\ChatAccessor;
+use Miraliog\Pelegram\Concerns\Accessors\MessageAccessor;
+use Miraliog\Pelegram\Concerns\Accessors\MediaAccessor;
+use Miraliog\Pelegram\Concerns\Accessors\CommandAccessor;
+use Miraliog\Pelegram\Concerns\Accessors\CallbackAccessor;
+use Miraliog\Pelegram\Concerns\Accessors\InlineQueryAccessor;
+use Miraliog\Pelegram\Concerns\Accessors\PaymentAccessor;
+use Miraliog\Pelegram\Concerns\Accessors\LocationAccessor;
+use Miraliog\Pelegram\Concerns\Accessors\ContactAccessor;
+use Miraliog\Pelegram\Concerns\Accessors\ChatMemberAccessor;
+use Miraliog\Pelegram\Concerns\Actions\Answerable;
+use Miraliog\Pelegram\Concerns\Actions\Replyable;
 
 class Update
 {

@@ -24,9 +24,9 @@ composer require miraliog/pelegram
 
 require 'vendor/autoload.php';
 
-use miraliog\pelegram\Bot;
-use miraliog\pelegram\Router;
-use miraliog\pelegram\Update;
+use Miraliog\Pelegram\Bot;
+use Miraliog\Pelegram\Router;
+use Miraliog\Pelegram\Update;
 
 $bot = new Bot('YOUR_BOT_TOKEN');
 $router = new Router();

@@ -1,9 +1,9 @@
 <?php
 
-namespace miraliog\pelegram\Contracts;
+namespace Miraliog\Pelegram\Contracts;
 
-use miraliog\pelegram\Bot;
-use miraliog\pelegram\Update;
+use Miraliog\Pelegram\Bot;
+use Miraliog\Pelegram\Update;
 
 interface MiddlewareInterface
 {
