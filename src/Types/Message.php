@@ -2,8 +2,11 @@
 
 namespace Miraliog\Pelegram\Types;
 
+use Miraliog\Pelegram\Types\Keyboard\InlineKeyboardMarkup;
+use Miraliog\Pelegram\Types\Keyboard\ReplyKeyboardMarkup;
+use Miraliog\Pelegram\Types\Keyboard\ReplyKeyboardRemove;
+use Miraliog\Pelegram\Enums\ParseMode;
 use Miraliog\Pelegram\Bot;
-use Miraliog\Pelegram\Types\Keyboard\Contracts\Keyboardable;
 
 class Message
 {
@@ -20,34 +23,97 @@ class Message
 
     public function answer(
         string $text,
-        Keyboardable|array|null $replyMarkup = null,
-        string $parseMode = 'HTML',
-        bool $disableWebPagePreview = false,
+        ?int $messageThreadId = null,
+        ?ParseMode $parseMode = null,
+        ?array $entities = null,
+        ?bool $disableWebPagePreview = null,
+        ?bool $linkPreviewOptions = null,
+        ?bool $disableNotification = null,
+        ?bool $protectContent = null,
+        ?int $replyToMessageId = null,
+        ?bool $allowSendingWithoutReply = null,
+        ?array $replyParameters = null,
+        InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|null $replyMarkup = null,
+        ?string $businessConnectionId = null,
+        ?string $messageEffectId = null,
+        ?bool $allowPaidBroadcast = null,
+        ?int $directMessagesTopicId = null,
+        ?array $suggestedPostParameters = null,
+        ?int $receiverUserId = null,
+        ?string $callbackQueryId = null,
+        ?array $ephemeralMessageParameters = null,
     ): array {
         return $this->bot->sendMessage(
             chatId: $this->chatId(),
             text: $text,
-            replyMarkup: $replyMarkup,
+            messageThreadId: $messageThreadId,
             parseMode: $parseMode,
+            entities: $entities,
             disableWebPagePreview: $disableWebPagePreview,
+            linkPreviewOptions: $linkPreviewOptions,
+            disableNotification: $disableNotification,
+            protectContent: $protectContent,
+            replyToMessageId: $replyToMessageId,
+            allowSendingWithoutReply: $allowSendingWithoutReply,
+            replyParameters: $replyParameters,
+            replyMarkup: $replyMarkup,
+            businessConnectionId: $businessConnectionId,
+            messageEffectId: $messageEffectId,
+            allowPaidBroadcast: $allowPaidBroadcast,
+            directMessagesTopicId: $directMessagesTopicId,
+            suggestedPostParameters: $suggestedPostParameters,
+            receiverUserId: $receiverUserId,
+            callbackQueryId: $callbackQueryId,
+            ephemeralMessageParameters: $ephemeralMessageParameters,
         );
     }
 
     public function reply(
         string $text,
-        Keyboardable|array|null $replyMarkup = null,
-        string $parseMode = 'HTML',
-        bool $disableWebPagePreview = false,
+        ?int $messageThreadId = null,
+        ?ParseMode $parseMode = null,
+        ?array $entities = null,
+        ?bool $disableWebPagePreview = null,
+        ?bool $linkPreviewOptions = null,
+        ?bool $disableNotification = null,
+        ?bool $protectContent = null,
+        ?bool $allowSendingWithoutReply = null,
+        ?array $replyParameters = null,
+        InlineKeyboardMarkup|ReplyKeyboardMarkup|ReplyKeyboardRemove|null $replyMarkup = null,
+        ?string $businessConnectionId = null,
+        ?string $messageEffectId = null,
+        ?bool $allowPaidBroadcast = null,
+        ?int $directMessagesTopicId = null,
+        ?array $suggestedPostParameters = null,
+        ?int $receiverUserId = null,
+        ?string $callbackQueryId = null,
+        ?array $ephemeralMessageParameters = null,
     ): array {
         return $this->bot->sendMessage(
             chatId: $this->chatId(),
             text: $text,
-            replyMarkup: $replyMarkup,
+            messageThreadId: $messageThreadId,
             parseMode: $parseMode,
+            entities: $entities,
             disableWebPagePreview: $disableWebPagePreview,
+            linkPreviewOptions: $linkPreviewOptions,
+            disableNotification: $disableNotification,
+            protectContent: $protectContent,
             replyToMessageId: $this->messageId(),
+            allowSendingWithoutReply: $allowSendingWithoutReply,
+            replyParameters: $replyParameters,
+            replyMarkup: $replyMarkup,
+            businessConnectionId: $businessConnectionId,
+            messageEffectId: $messageEffectId,
+            allowPaidBroadcast: $allowPaidBroadcast,
+            directMessagesTopicId: $directMessagesTopicId,
+            suggestedPostParameters: $suggestedPostParameters,
+            receiverUserId: $receiverUserId,
+            callbackQueryId: $callbackQueryId,
+            ephemeralMessageParameters: $ephemeralMessageParameters,
         );
     }
+
 
     public function delete(): bool
     {
@@ -64,9 +130,9 @@ class Message
         return $this->bot->copyMessage($toChatId, $this->chatId(), $this->messageId(), $caption);
     }
 
-    public function pin(bool $disableNotification = false): bool
+    public function pin(?int $messageId = null, bool $disableNotification = false): bool
     {
-        return $this->bot->pinChatMessage($this->chatId(), $this->messageId(), $disableNotification);
+        return $this->bot->pinChatMessage($this->chatId(), $messageId ?? $this->messageId(), $disableNotification);
     }
 
     public function typing(): bool

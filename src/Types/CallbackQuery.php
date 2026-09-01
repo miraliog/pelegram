@@ -2,8 +2,11 @@
 
 namespace Miraliog\Pelegram\Types;
 
+use Miraliog\Pelegram\Types\Keyboard\InlineKeyboardMarkup;
+use Miraliog\Pelegram\Types\Keyboard\ReplyKeyboardMarkup;
+use Miraliog\Pelegram\Types\Keyboard\ReplyKeyboardRemove;
+use Miraliog\Pelegram\Enums\ParseMode;
 use Miraliog\Pelegram\Bot;
-use Miraliog\Pelegram\Types\Keyboard\Contracts\Keyboardable;
 
 class CallbackQuery
 {
@@ -40,8 +43,8 @@ class CallbackQuery
 
     public function edit(
         string $text,
-        Keyboardable|array|null $replyMarkup = null,
-        string $parseMode = 'HTML',
+        ReplyKeyboardMarkup|InlineKeyboardMarkup|ReplyKeyboardRemove|null $replyMarkup = null,
+        ?ParseMode $parseMode = null,
     ): array {
         return $this->bot->editMessageText(
             chatId: $this->chatId(),
@@ -52,7 +55,7 @@ class CallbackQuery
         );
     }
 
-    public function editMarkup(Keyboardable|array|null $replyMarkup = null): array
+    public function editMarkup(ReplyKeyboardMarkup|InlineKeyboardMarkup|ReplyKeyboardRemove|null $replyMarkup = null): array
     {
         return $this->bot->editMessageReplyMarkup(
             chatId: $this->chatId(),
@@ -66,12 +69,11 @@ class CallbackQuery
         return $this->bot->deleteMessage($this->chatId(), $this->messageId());
     }
 
-    /** answer + edit در یه خط */
     public function answerAndEdit(
         string $editText,
         string $answerText = '',
         bool $showAlert = false,
-        Keyboardable|array|null $replyMarkup = null,
+        ReplyKeyboardMarkup|InlineKeyboardMarkup|ReplyKeyboardRemove|null $replyMarkup = null,
     ): void {
         $this->answer($answerText, $showAlert);
         $this->edit($editText, $replyMarkup);

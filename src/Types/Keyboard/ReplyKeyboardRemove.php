@@ -8,7 +8,7 @@ use Miraliog\Pelegram\Types\Keyboard\Contracts\Keyboardable;
  * ReplyKeyboardRemove
  * Source: https://core.telegram.org/bots/api#replykeyboardremove
  */
-class KeyboardRemove implements Keyboardable
+class ReplyKeyboardRemove implements Keyboardable
 {
     private function __construct(private readonly bool $selective = false) {}
 
