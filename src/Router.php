@@ -222,7 +222,7 @@ class Router
         return $this;
     }
 
-    public function dispatch(Bot $bot, ?Update $update): void
+    public function dispatch(Bot $bot, ?Update $update = null): void
     {
         $update ??= Update::fromWebhook();
 
